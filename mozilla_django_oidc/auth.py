@@ -239,9 +239,16 @@ class OIDCAuthenticationBackend(ModelBackend):
         verified_id = self.verify_token(id_token, nonce=nonce)
 
         if verified_id:
+            self.store_tokens(access_token, id_token)
             return self.get_or_create_user(access_token, id_token, verified_id)
 
         return None
+
+    def store_tokens(self, access_token, id_token):
+        """Store OIDC tokens."""
+        session = self.request.session
+        session['oidc_access_token'] = access_token
+        session['oidc_id_token'] = id_token
 
     def get_or_create_user(self, access_token, id_token, verified_id):
         """Returns a User instance if 1 user is found. Creates a user if not found
